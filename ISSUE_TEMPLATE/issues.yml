@@ -1,0 +1,56 @@
+name: "Sprint Task"
+description: "Create a structured sprint task"
+title: "[TASK] <short-title>"
+labels: ["sprint-task"]
+projects: []
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Sprint Task
+        Use this template to define a clear, actionable task for the sprint.
+
+  - type: input
+    id: summary
+    attributes:
+      label: 📝 Summary
+      description: Short description of the task.
+      placeholder: "E.g., Implement logging for service X"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🔍 Detailed Description
+      description: Provide context, expected behavior, acceptance criteria, etc.
+      placeholder: "Explain what needs to be done and why."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: task_list
+    attributes:
+      label: ☑️ Task Checklist
+      description: Add or modify tasks as needed.
+      options:
+        - label: Unit Tests
+        - label: Documentation Updated
+
+  - type: textarea
+    id: blocked
+    attributes:
+      label: 🚫 Blocked Reason
+      description: Describe why this task is blocked, if applicable.
+      placeholder: "If not blocked, write 'N/A'"
+      value: "N/A"
+
+  - type: textarea
+    id: wont_do
+    attributes:
+      label: 🛑 Won't Do Reason
+      description: If this task (or part of it) will not be pursued, explain why.
+      placeholder: "If not applicable, write 'N/A'"
+      value: "N/A"

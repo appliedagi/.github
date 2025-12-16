@@ -1,0 +1,57 @@
+name: "Parent"
+description: "Create a project or parent task for the sprint"
+title: "[Project] <short-title>"
+labels: ["parent"]
+projects: []
+assignees: []
+#working
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Project / Feature
+        Use this template to define a project or parent task.
+
+  - type: input
+    id: summary
+    attributes:
+      label: 📝 Summary
+      description: Short description of the project or parent task.
+      placeholder: "E.g., improving novator performance"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🔍 Detailed Description
+      description: Provide context, expected behavior, acceptance criteria, etc.
+      placeholder: "Explain what needs to be done and why."
+    validations:
+      required: false
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: ☑️ Deliverables Checklist
+      description: Add or modify deliverables as needed.
+      value: |
+        | Task | Due Date |
+        |------|----------|
+        | End date | YYYY-MM-DD |
+
+  - type: textarea
+    id: blocked
+    attributes:
+      label: 🚫 Blocked Reason
+      description: Describe why this task is blocked, if applicable.
+      placeholder: "If not blocked, write 'N/A'"
+      value: "N/A"
+
+  - type: textarea
+    id: wont_do
+    attributes:
+      label: 🛑 Won't Do Reason
+      description: If this task (or part of it) will not be pursued, explain why.
+      placeholder: "If not applicable, write 'N/A'"
+      value: "N/A"

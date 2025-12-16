@@ -1,0 +1,19 @@
+on:
+  pull_request:
+    branches:
+      - "**/[0-9]**"
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  convert-pr-to-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark as draft
+        uses: voiceflow/draft-pr@latest
+        if: github.event.pull_request.draft == false
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
