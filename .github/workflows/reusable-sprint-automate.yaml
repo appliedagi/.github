@@ -1,0 +1,158 @@
+name: Reusable Sprint Automations
+
+on:
+  workflow_call:
+    inputs:
+      organization:
+        description: 'GitHub organization name'
+        required: true
+        type: string
+      project_id:
+        description: 'Project board ID'
+        required: true
+        type: number
+      status_in_progress:
+        description: 'Status value for in progress'
+        required: false
+        type: string
+        default: '🏗 In progress'
+      status_in_review:
+        description: 'Status value for in review'
+        required: false
+        type: string
+        default: '👀 In review'
+      status_done:
+        description: 'Status value for done'
+        required: false
+        type: string
+        default: '✅ Done'
+      event_name:
+        description: 'The triggering event name'
+        required: true
+        type: string
+      event_action:
+        description: 'The triggering event action'
+        required: false
+        type: string
+        default: ''
+      is_draft:
+        description: 'Whether the PR is a draft'
+        required: false
+        type: boolean
+        default: false
+      is_merged:
+        description: 'Whether the PR is merged'
+        required: false
+        type: boolean
+        default: false
+      branch_ref:
+        description: 'Branch reference (for push events)'
+        required: false
+        type: string
+        default: ''
+      pr_head_ref:
+        description: 'PR head branch reference (for PR events)'
+        required: false
+        type: string
+        default: ''
+    secrets:
+      token:
+        description: 'GitHub token with project permissions'
+        required: true
+
+jobs:
+  get_issue_node_id:
+    name: Get linked issue node ID
+    runs-on: ubuntu-latest
+    outputs:
+      issue_node_id: ${{ steps.get_issue.outputs.node_id }}
+    steps:
+      - name: Get issue node ID from branch
+        id: get_issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.token }}
+          script: |
+            let branch = '';
+            if ('${{ inputs.event_name }}' === 'push') {
+              branch = '${{ inputs.branch_ref }}'.replace('refs/heads/', '');
+            } else if ('${{ inputs.event_name }}' === 'pull_request') {
+              branch = '${{ inputs.pr_head_ref }}';
+            }
+            
+            const issue_number = parseInt(branch.split('-')[0]);
+            if (isNaN(issue_number)) {
+              core.setOutput('node_id', '');
+              return;
+            }
+            
+            try {
+              const issue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+              });
+              core.setOutput('node_id', issue.data.node_id);
+            } catch (error) {
+              console.log(`Issue #${issue_number} not found: ${error.message}`);
+              core.setOutput('node_id', '');
+            }
+
+  move_to_in_progress:
+    name: Move to In Progress
+    runs-on: ubuntu-latest
+    needs: get_issue_node_id
+    if: |
+      needs.get_issue_node_id.outputs.issue_node_id != '' && (
+        inputs.event_name == 'push' ||
+        (inputs.event_name == 'pull_request' && inputs.event_action == 'opened') ||
+        (inputs.event_name == 'pull_request' && inputs.event_action == 'converted_to_draft')
+      )
+    steps:
+      - name: Move Issue to In Progress
+        uses: leonsteinhaeuser/project-beta-automations@v2.2.1
+        with:
+          gh_token: ${{ secrets.token }}
+          organization: ${{ inputs.organization }}
+          project_id: ${{ inputs.project_id }}
+          resource_node_id: ${{ needs.get_issue_node_id.outputs.issue_node_id }}
+          status_value: ${{ inputs.status_in_progress }}
+
+  move_to_in_review:
+    name: Move to In Review
+    runs-on: ubuntu-latest
+    needs: get_issue_node_id
+    if: |
+      needs.get_issue_node_id.outputs.issue_node_id != '' &&
+      inputs.event_name == 'pull_request' &&
+      inputs.is_draft == false &&
+      inputs.is_merged == false &&
+      inputs.event_action != 'closed'
+    steps:
+      - name: Move Issue to In Review
+        uses: leonsteinhaeuser/project-beta-automations@v2.2.1
+        with:
+          gh_token: ${{ secrets.token }}
+          organization: ${{ inputs.organization }}
+          project_id: ${{ inputs.project_id }}
+          resource_node_id: ${{ needs.get_issue_node_id.outputs.issue_node_id }}
+          status_value: ${{ inputs.status_in_review }}
+
+  move_to_done:
+    name: Move to Done
+    runs-on: ubuntu-latest
+    needs: get_issue_node_id
+    if: |
+      needs.get_issue_node_id.outputs.issue_node_id != '' &&
+      inputs.event_name == 'pull_request' &&
+      inputs.event_action == 'closed' &&
+      inputs.is_merged == true
+    steps:
+      - name: Move Issue to Done
+        uses: leonsteinhaeuser/project-beta-automations@v2.2.1
+        with:
+          gh_token: ${{ secrets.token }}
+          organization: ${{ inputs.organization }}
+          project_id: ${{ inputs.project_id }}
+          resource_node_id: ${{ needs.get_issue_node_id.outputs.issue_node_id }}
+          status_value: ${{ inputs.status_done }}

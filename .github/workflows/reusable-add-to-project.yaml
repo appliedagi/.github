@@ -1,0 +1,35 @@
+name: Reusable Add to Project
+
+on:
+  workflow_call:
+    inputs:
+      project_url:
+        description: 'GitHub Project URL'
+        required: true
+        type: string
+      labels:
+        description: 'Comma-separated labels to filter issues'
+        required: false
+        type: string
+        default: 'bug, sprint-task'
+      label_operator:
+        description: 'Label operator (AND, OR, NOT)'
+        required: false
+        type: string
+        default: 'OR'
+    secrets:
+      token:
+        description: 'GitHub token with project permissions'
+        required: true
+
+jobs:
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: ${{ inputs.project_url }}
+          github-token: ${{ secrets.token }}
+          labeled: ${{ inputs.labels }}
+          label-operator: ${{ inputs.label_operator }}

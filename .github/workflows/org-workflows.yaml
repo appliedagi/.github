@@ -1,0 +1,65 @@
+name: Organization Workflows
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+      - closed
+      - edited
+      - labeled
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - review_requested
+      - converted_to_draft
+      - ready_for_review
+      - review_request_removed
+      - closed
+  push:
+    branches:
+      - "**/[0-9]**"
+
+jobs:
+  # Auto PR - Creates draft PR when pushing to issue-linked branches
+  auto-pr:
+    if: github.event_name == 'push'
+    uses: appliedagi/.github/.github/workflows/reusable-auto-pr.yaml@main
+    with:
+      base_branch: 'dev'
+    secrets:
+      token: ${{ secrets.PROJECT_AUTOMATION }}
+
+  # Add to Project - Adds labeled issues to project board
+  add-to-project:
+    if: github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'edited' || github.event.action == 'labeled')
+    uses: appliedagi/.github/.github/workflows/reusable-add-to-project.yaml@main
+    with:
+      project_url: 'https://github.com/orgs/appliedagi/projects/5'
+      labels: 'bug, sprint-task'
+      label_operator: 'OR'
+    secrets:
+      token: ${{ secrets.PROJECT_AUTOMATION }}
+
+  # PR to Draft - Converts PRs to draft status
+  pr-to-draft:
+    if: github.event_name == 'pull_request'
+    uses: appliedagi/.github/.github/workflows/reusable-pr-to-draft.yaml@main
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Sprint Automation - Manages issue status based on PR/branch activity
+  sprint-automation:
+    uses: appliedagi/.github/.github/workflows/reusable-sprint-automate.yaml@main
+    with:
+      organization: 'appliedagi'
+      project_id: 5
+      event_name: ${{ github.event_name }}
+      event_action: ${{ github.event.action || '' }}
+      is_draft: ${{ github.event.pull_request.draft || false }}
+      is_merged: ${{ github.event.pull_request.merged || false }}
+      branch_ref: ${{ github.ref }}
+      pr_head_ref: ${{ github.event.pull_request.head.ref || '' }}
+    secrets:
+      token: ${{ secrets.PROJECT_AUTOMATION }}
