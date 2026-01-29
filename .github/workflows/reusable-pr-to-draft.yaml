@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Mark as draft
-        uses: voiceflow/draft-pr@v1
+        uses: voiceflow/draft-pr@latest
         if: github.event.pull_request.draft == false
         with:
           token: ${{ secrets.token }}
