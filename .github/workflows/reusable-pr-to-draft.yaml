@@ -3,10 +3,7 @@ name: Reusable PR to Draft
 on:
   workflow_call:
     secrets:
-      token:
-        description: 'GitHub token with PR permissions'
-        required: true
-
+      token: ${{ secrets.PROJECT_AUTOMATION }}
 permissions:
   contents: read
   pull-requests: write

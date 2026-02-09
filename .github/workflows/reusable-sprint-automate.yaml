@@ -56,9 +56,7 @@ on:
         type: string
         default: ''
     secrets:
-      token:
-        description: 'GitHub token with project permissions'
-        required: true
+      token: ${{ secrets.PROJECT_AUTOMATION }}
 
 jobs:
   get_issue_node_id:
