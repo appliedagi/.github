@@ -47,7 +47,7 @@ jobs:
     if: github.event_name == 'pull_request'
     uses: appliedagi/.github/.github/workflows/reusable-pr-to-draft.yaml@main
     secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.PROJECT_AUTOMATION }}
 
   # Sprint Automation - Manages issue status based on PR/branch activity
   sprint-automation:
