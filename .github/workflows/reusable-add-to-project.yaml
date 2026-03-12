@@ -18,7 +18,9 @@ on:
         type: string
         default: 'OR'
     secrets:
-      token: ${{ secrets.PROJECT_AUTOMATION }}
+      token:
+        description: 'GitHub token with project permissions'
+        required: true
 
 jobs:
   add-to-project:
