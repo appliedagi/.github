@@ -3,7 +3,7 @@ name: Reusable PR to Draft
 on:
   workflow_call:
     secrets:
-      token: ${{ secrets.PROJECT_AUTOMATION }}
+      token: ${{ secrets.token }}
 permissions:
   contents: read
   pull-requests: write
